@@ -1,3 +1,3 @@
-# SpinnyRocket
+# WavySeeds
 
-Rocket spins and flies. Don't hit the walls, don't get shot down.
+Seeds on a hexgrid respond to waves of resources.
