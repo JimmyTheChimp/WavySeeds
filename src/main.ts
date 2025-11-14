@@ -15,12 +15,12 @@ const config: Types.Core.GameConfig = {
     parent: 'game-container',
     backgroundColor: '#028af8',
     physics: {
-        default: 'arcade',
-        arcade: {
+        default: 'matter',
+        matter: {
             debug: true,
             gravity: {
                 x: 0,
-                y: 300
+                y: 1
             }
         }
     },

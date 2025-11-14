@@ -5,15 +5,15 @@ export class Game extends Scene
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.Image;
     msg_text : Phaser.GameObjects.Text;
-    rocket: Phaser.Physics.Arcade.Image;
-    rocketBody: Phaser.Physics.Arcade.Body;
+    rocket: Phaser.Physics.Matter.Image;
+    //rocketBody: Phaser.Physics.Arcade.Body;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     turnSpeed: number;
 
     constructor ()
     {
                 super('Game');
-                this.turnSpeed = 90;
+                this.turnSpeed = 0.15;
     }
 
     create ()
@@ -30,18 +30,22 @@ export class Game extends Scene
 
         });
 
-        this.rocket = this.physics.add.image(256, 172, 'rocket');
+        this.matter.world.setBounds(0,0,1024,768);
+
+        this.rocket = this.matter.add.image(256, 172, 'rocket');
         this.rocket.setAngle(-90);
+        this.rocket.setFrictionAir(0.05);
+        this.rocket.setMass(30);
         //this.rocket = this.add.triangle(256,172, 0,60,25,0,50,60,0xaaaaaa);
-        this.physics.add.existing(this.rocket, false);
-        if(this.rocket.body instanceof Phaser.Physics.Arcade.Body)
-        {
-            this.rocketBody = this.rocket.body;
-            this.rocketBody.setBounce(0.2);
-            this.rocketBody.setCollideWorldBounds(true);
-            this.rocketBody.allowGravity = true;            
+        //this.physics.add.existing(this.rocket, false);
+        // if(this.rocket.body instanceof Phaser.Physics.Arcade.Body)
+        // {
+        //     this.rocketBody = this.rocket.body;
+        //     this.rocketBody.setBounce(0.2);
+        //     this.rocketBody.setCollideWorldBounds(true);
+        //     this.rocketBody.allowGravity = true;            
             
-        }
+        // }
 
         if(this.input.keyboard)
             this.cursors = this.input.keyboard?.createCursorKeys();    
@@ -72,38 +76,40 @@ export class Game extends Scene
     }
 
     rocketIdle() {
-        this.rocketBody.setVelocityX(0);
+        //this.rocketBody.setVelocityX(0);
         
         //this.rocket.setTint(0xffffff, 0xffffff, 0xffffff, 0xffffff);
     }
 
     rocketAccelerate(){
+        this.rocket.thrust(0.15);
         //this.rocketBody.setVelocityY(-300);
-        this.physics.velocityFromRotation(
-            Phaser.Math.DegToRad(this.rocketBody.rotation),
-            200,
-            this.rocketBody.velocity
-        );
+        // this.physics.velocityFromRotation(
+        //     Phaser.Math.DegToRad(this.rocketBody.rotation),
+        //     200,
+        //     this.rocketBody.velocity
+        // );
         
         //this.rocket.setTint(0xffffff, 0xffffff, 0xff0000, 0xff0000)
     }
 
     rocketTurnLeft(_delta: number) {
-        this.rocketBody.setAngularVelocity(this.turnSpeed * -1);
+        this.rocket.setAngularVelocity(this.turnSpeed * -1);
         //this.rocket.setRotation(this.turnSpeed * delta * -1);
         //this.rocket.setTint(0xffffff, 0xffffff, 0xffffff, 0xff0000)
         //this.player.anims.play('left', true);
     }
 
     rocketTurnRight(_delta: number){
-        console.log(this.turnSpeed);
-                this.rocketBody.setAngularVelocity(this.turnSpeed);
+        
+        //console.log(this.turnSpeed);
+        this.rocket.setAngularVelocity(this.turnSpeed);
                 //this.rocket.setRotation(this.turnSpeed * delta);
                 //this.rocket.setTint(0xffffff, 0xffffff, 0xff0000, 0xffffff)
         //this.player.anims.play('right', true);
     }
 
     rocketNoTurn(){
-        this.rocketBody.setAngularVelocity(0);
+        this.rocket.setAngularVelocity(0);
     }
 }
