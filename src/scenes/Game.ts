@@ -5,10 +5,10 @@ export class Game extends Scene
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.Image;
     msg_text : Phaser.GameObjects.Text;
-    rocket: Phaser.Physics.Matter.Image;
-    //rocketBody: Phaser.Physics.Arcade.Body;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     turnSpeed: number;
+    controls: Phaser.Cameras.Controls.SmoothedKeyControl;
+    currentLayer: integer;
 
     constructor ()
     {
@@ -18,98 +18,52 @@ export class Game extends Scene
 
     create ()
     {
+        const map = this.add.tilemap('map');
+        const tileset = map.addTilesetImage('tileset', 'tiles');
+        if(!tileset)
+            return;
+
+        map.createLayer('Layer 1', tileset);
+        map.createLayer('Layer 2', tileset);
+        this.currentLayer = 1;        
+
+        if(!this.input.keyboard)
+            return;
+        
+        this.cursors = this.input.keyboard.createCursorKeys();  
+
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0xffffff);
+        this.camera.setZoom(2);
+        this.camera.centerOn(200,100);
 
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
+        const cursors = this.cursors;
+        const controlConfig = {
+                camera: this.cameras.main,
+                left: cursors.left,
+                right: cursors.right,
+                up: cursors.up,
+                down: cursors.down,
+                acceleration: 0.02,
+                drag: 0.0005,
+                maxSpeed: 0.7
+        };
 
-        this.input.once('pointerdown', () => {
-
-            this.scene.start('GameOver');
-
-        });
-
-        this.matter.world.setBounds(0,0,1024,768);
-
-        this.rocket = this.matter.add.image(256, 172, 'rocket');
-        this.rocket.setAngle(-90);
-        this.rocket.setFrictionAir(0.05);
-        this.rocket.setMass(30);
-        //this.rocket = this.add.triangle(256,172, 0,60,25,0,50,60,0xaaaaaa);
-        //this.physics.add.existing(this.rocket, false);
-        // if(this.rocket.body instanceof Phaser.Physics.Arcade.Body)
-        // {
-        //     this.rocketBody = this.rocket.body;
-        //     this.rocketBody.setBounce(0.2);
-        //     this.rocketBody.setCollideWorldBounds(true);
-        //     this.rocketBody.allowGravity = true;            
-            
-        // }
-
-        if(this.input.keyboard)
-            this.cursors = this.input.keyboard?.createCursorKeys();    
-    }
-
-    update(_time: number, delta: number) {
-        const { left, right, up } = this.cursors;
-        let rocketIsIdle = true;
-
-        if (left.isDown)        {
-            this.rocketTurnLeft(delta);        
-            rocketIsIdle = false;
-        }
-        else if (right.isDown){
-            this.rocketTurnRight(delta);
-            rocketIsIdle = false;
-        }
-        else
-            this.rocketNoTurn();
-
-        if (up.isDown){
-            this.rocketAccelerate();
-            rocketIsIdle = false;
-        }
-
-        if(rocketIsIdle)
-            this.rocketIdle();
-    }
-
-    rocketIdle() {
-        //this.rocketBody.setVelocityX(0);
+        this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl(controlConfig);
         
-        //this.rocket.setTint(0xffffff, 0xffffff, 0xffffff, 0xffffff);
+        this.input.addListener('pointerdown', () => {
+            if(this.currentLayer === 1)
+                this.currentLayer = 2;
+            else
+                this.currentLayer = 1;
+
+            map.layers[1].visible = (this.currentLayer === 2);
+            map.shuffle(3,3,3,3);            
+        });  
+       
     }
 
-    rocketAccelerate(){
-        this.rocket.thrust(0.15);
-        //this.rocketBody.setVelocityY(-300);
-        // this.physics.velocityFromRotation(
-        //     Phaser.Math.DegToRad(this.rocketBody.rotation),
-        //     200,
-        //     this.rocketBody.velocity
-        // );
-        
-        //this.rocket.setTint(0xffffff, 0xffffff, 0xff0000, 0xff0000)
+    update(_time: number, _delta: number) {
+       
     }
 
-    rocketTurnLeft(_delta: number) {
-        this.rocket.setAngularVelocity(this.turnSpeed * -1);
-        //this.rocket.setRotation(this.turnSpeed * delta * -1);
-        //this.rocket.setTint(0xffffff, 0xffffff, 0xffffff, 0xff0000)
-        //this.player.anims.play('left', true);
-    }
-
-    rocketTurnRight(_delta: number){
-        
-        //console.log(this.turnSpeed);
-        this.rocket.setAngularVelocity(this.turnSpeed);
-                //this.rocket.setRotation(this.turnSpeed * delta);
-                //this.rocket.setTint(0xffffff, 0xffffff, 0xff0000, 0xffffff)
-        //this.player.anims.play('right', true);
-    }
-
-    rocketNoTurn(){
-        this.rocket.setAngularVelocity(0);
-    }
 }

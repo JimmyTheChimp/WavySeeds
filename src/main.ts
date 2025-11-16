@@ -14,16 +14,7 @@ const config: Types.Core.GameConfig = {
     height: 768,
     parent: 'game-container',
     backgroundColor: '#028af8',
-    physics: {
-        default: 'matter',
-        matter: {
-            debug: true,
-            gravity: {
-                x: 0,
-                y: 1
-            }
-        }
-    },
+    pixelArt: true,
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
