@@ -9,6 +9,7 @@ export class Game extends Scene
     turnSpeed: number;
     controls: Phaser.Cameras.Controls.SmoothedKeyControl;
     currentLayer: integer;
+    map: Phaser.Tilemaps.Tilemap;
 
     constructor ()
     {
@@ -18,13 +19,13 @@ export class Game extends Scene
 
     create ()
     {
-        const map = this.add.tilemap('map');
+        const map = this.map = this.add.tilemap('map');
         const tileset = map.addTilesetImage('tileset', 'tiles');
         if(!tileset)
             return;
 
         map.createLayer('Layer 1', tileset);
-        map.createLayer('Layer 2', tileset);
+        //map.createLayer('Layer 2', tileset);
         this.currentLayer = 1;        
 
         if(!this.input.keyboard)
@@ -50,20 +51,38 @@ export class Game extends Scene
 
         this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl(controlConfig);
         
-        this.input.addListener('pointerdown', () => {
-            if(this.currentLayer === 1)
-                this.currentLayer = 2;
-            else
-                this.currentLayer = 1;
+        // this.input.addListener('pointerdown', () => {
+        //     const clickedTile = map.getTileAtWorldXY(this.input.mousePointer.x,
+        //         this.input.mousePointer.y,
+        //         false,this.camera);
+           
+        //         if(!clickedTile)
+        //             return;
+        //     map.putTileAt(1 , clickedTile.x, clickedTile.y);
 
-            map.layers[1].visible = (this.currentLayer === 2);
-            map.shuffle(3,3,3,3);            
-        });  
+        //     // if(this.currentLayer === 1)
+        //     //     this.currentLayer = 2;
+        //     // else
+        //     //     this.currentLayer = 1;
+
+        //     // map.layers[1].visible = (this.currentLayer === 2);
+        //     // map.shuffle(3,3,3,3);            
+        // });  
        
     }
 
     update(_time: number, _delta: number) {
-       
+       const worldPoint = this.input.activePointer.positionToCamera(this.camera);
+
+       if(!("x" in worldPoint) || !("y" in worldPoint))
+        return;
+
+       const pointerTileXY = this.map.worldToTileXY(worldPoint.x, worldPoint.y);
+
+       if(this.input.manager.activePointer.isDown){
+        if(pointerTileXY)
+            this.map.putTileAt(1, pointerTileXY.x, pointerTileXY.y);
+       }
     }
 
 }
