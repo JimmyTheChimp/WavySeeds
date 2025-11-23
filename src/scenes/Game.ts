@@ -1,4 +1,6 @@
 import { Scene } from 'phaser';
+import PlantState from '../model/PlantState';
+import SoilState from '../model/SoilState';
 
 export class Game extends Scene
 {
@@ -10,6 +12,9 @@ export class Game extends Scene
     controls: Phaser.Cameras.Controls.SmoothedKeyControl;
     currentLayer: integer;
     map: Phaser.Tilemaps.Tilemap;
+    propertiesText: Phaser.GameObjects.Text
+    soilLayer: Phaser.Tilemaps.TilemapLayer;
+    plantLayer: Phaser.Tilemaps.TilemapLayer;
 
     constructor ()
     {
@@ -24,8 +29,18 @@ export class Game extends Scene
         if(!tileset)
             return;
 
-        map.createLayer('Layer 1', tileset);
-        //map.createLayer('Layer 2', tileset);
+        const soilLayer = map.createLayer('Soil', tileset);
+        if(!soilLayer)
+            return;
+        this.soilLayer = soilLayer;
+        this.initializeSoilLayer(soilLayer);
+
+        const plantLayer = map.createLayer('Plants', tileset);
+        if(!plantLayer)
+            return;
+        this.plantLayer = plantLayer;
+        this.initializePlantLayer(plantLayer);
+        
         this.currentLayer = 1;        
 
         if(!this.input.keyboard)
@@ -50,7 +65,10 @@ export class Game extends Scene
         };
 
         this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl(controlConfig);
-        
+
+        // Properties text
+        this.propertiesText = this.add.text(20,20,"");
+
         // this.input.addListener('pointerdown', () => {
         //     const clickedTile = map.getTileAtWorldXY(this.input.mousePointer.x,
         //         this.input.mousePointer.y,
@@ -80,9 +98,73 @@ export class Game extends Scene
        const pointerTileXY = this.map.worldToTileXY(worldPoint.x, worldPoint.y);
 
        if(this.input.manager.activePointer.isDown){
-        if(pointerTileXY)
+        if(pointerTileXY){
             this.map.putTileAt(1, pointerTileXY.x, pointerTileXY.y);
+            
+            const plantTile = this.map.getTileAt(pointerTileXY.x, pointerTileXY.y);
+            if(plantTile){
+                
+                const state = plantTile.properties as PlantState;
+                state.stage++;  
+                this.propertiesText.setText(`Soil Props: ${JSON.stringify(plantTile.properties)}`);
+            }
+
+        }
        }
+
+       // Update tiles based on state
+       this.plantLayer.forEachTile(tile => {
+            const state = tile.properties as PlantState;
+            const newTileNum = state.stage % 8 + 1;
+            this.plantLayer.putTileAt(newTileNum, tile.x, tile.y);
+       });
+    }
+
+    initializeSoilLayer(layer: Phaser.Tilemaps.TilemapLayer|null){
+        if(!layer)
+            return;
+
+        // TODO: how to iterate all tiles?
+        layer.forEachTile(tile => {
+            tile.properties = new SoilState();    
+        });
+        // let i = 1;
+        // let tile = layer.findByIndex(i);
+        // while(tile !== null){
+           
+
+        //     tile = layer.findByIndex(++i);
+        // }            
+    }
+
+    initializePlantLayer(layer: Phaser.Tilemaps.TilemapLayer|null) {
+        if(!layer)
+            return;
+
+        layer.forEachTile(tile => {
+            tile.properties = new PlantState();    
+            console.log({ 
+                index: tile.index,
+                x: tile.x,
+                y: tile.y,
+                props: tile.properties
+            });
+        });
+
+        // TODO: how to iterate all tiles?
+        // let i = 1;
+        // let tile = layer.findByIndex(i);
+        // while(tile !== null){
+        //     tile.properties = new PlantState();    
+
+        //     console.log({ 
+        //         index: tile.index,
+        //         x: tile.x,
+        //         y: tile.y,
+        //         props: tile.properties
+        //     });
+        //     tile = layer.findByIndex(++i);
+        // }      
     }
 
 }
